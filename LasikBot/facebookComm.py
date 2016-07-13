@@ -5,7 +5,7 @@ from enum import Enum
 MessageType = Enum ( 'message', 'delivery', 'postback' )
 
 # This class serves as the interface to the Facebook Messenger API
-class facebookComm ( ):
+class FacebookComm ():
 
     # ------------------------------------------------------------------------- #
     # Sends a POST message to facebook messenger
