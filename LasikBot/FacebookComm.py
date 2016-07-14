@@ -47,6 +47,7 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     def sendMessage ( self, facebookID, message ) :
 
+        # todo Eventually I'll need to fetch the pageKey from the database as each will be unique to a customer
         pageKey = ApplicationKey.applicationKey  # todo error handling if this is doesn't get set
         postUrl = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + pageKey
         response_msg = json.dumps ( { "recipient" : { "id" : facebookID }, "message" : { "text" : message } } )
@@ -101,6 +102,7 @@ class FacebookComm ( ) :
                     self.processPostback ( facebookData, session )
                     # todo handle delivery type messages?
 
+
     # ------------------------------------------------------------------------- #
     # Retrieves a Facebook user's first name
     # ------------------------------------------------------------------------- #
@@ -120,6 +122,7 @@ class FacebookComm ( ) :
             # todo error handling
             return None
 
+
     # ------------------------------------------------------------------------- #
     # STATIC METHODS
     # ------------------------------------------------------------------------- #
@@ -134,12 +137,41 @@ class FacebookComm ( ) :
             # create session and say hi
             session[ 'facebookId' ] = facebookData.facebookId
             # todo set expiration data
-            # todo fetch the <PRACTICE NAME> based on the page id
-            welcomeMessage = ("Hello, " + self.getUserFirstName ( facebookData.facebookId ) + "! Thanks for "
-                                                                                              "choosing <PRACTICE NAME>. I'm here to help you schedule your free LASIK consultation. "
-                                                                                              "I just need a couple more pieces of information. Let's get started!")
 
-            self.sendMessage ( facebookData.facebookId, welcomeMessage )
+            self.sendGreeting( facebookData.facebookId )
+            self.sendConfirmationButtons( facebookData.facebookId )
+
+
+    def sendGreeting ( self, facebookId ):
+
+        # todo fetch the <PRACTICE NAME> based on the page id
+        welcomeMessage = ("Hello, " + self.getUserFirstName ( facebookId ) + "! Thanks for "
+            "choosing <PRACTICE NAME>. I'm here to help you schedule your free LASIK consultation. "
+            "I just need a couple more pieces of information.")
+
+        self.sendMessage ( facebookId, welcomeMessage )
+
+
+    def sendConfirmationButtons ( self, facebookId ):
+        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
+        response_msg = json.dumps ( { "recipient": { "id": facebookId }, "message": {
+            "attachment": { "type": "template",
+                            "payload": { "template_type": "button", "text": "Let's get started!", "buttons": [
+                                { "type": "postback", "title": "Ok", "payload": "ok" },
+                                { "type": "postback", "title": "Maybe later", "payload": "later" } ] } } } } )
+
+        status = requests.post ( post_message_url, headers = { "Content-Type": "application/json" }, data = response_msg )
+        # todo error handling
+
 
     def processPostback ( self, facebookData, session ) :
-        return 1
+
+        botMessage = None
+        if ( facebookData.payload == "ok" ):
+            botMessage = "What's the best email address for you?"
+
+        elif ( facebookData.payload == "later" ):
+            botMessage = "Sounds good! Just stop back by when you want to schedule your free consultation"
+
+        self.sendMessage ( facebookData.facebookId, botMessage )
+
