@@ -3,7 +3,7 @@ from django.views import generic
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from FacebookComm import FacebookComm
+from .FacebookComm import FacebookComm
 import json
 
 
@@ -31,11 +31,6 @@ class LasikBot ( generic.View ):
         # Converts the text payload into a python dictionary
         incomingMessage = json.loads ( request.body.decode ( 'utf-8' ) )
 
-        # Facebook recommends going through every entry since they might send
-        # multiple messages in a single call during high load
-        for entry in incomingMessage[ 'entry' ]:
-            for message in entry[ 'messaging' ]:
-                print ( message )
-                self.facebookComm.handlePostRequest ( message )
+        self.facebookComm.handlePostRequest ( incomingMessage, request.session )
 
         return HttpResponse ( )
