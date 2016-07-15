@@ -3,6 +3,7 @@ import requests
 from enum import Enum
 from . import ApplicationKey
 from django.http import HttpResponse
+from pprint import pprint
 
 
 class MessageType ( Enum ) :
@@ -25,7 +26,7 @@ class FacebookData ( ) :
         self.updateTime = updateTime
 
         if ('sender' in data) :
-            self.facebookId = data[ 'sender ' ][ 'id ' ]
+            self.facebookId = data[ 'sender' ][ 'id' ]
 
         if ('message' in data) :
             self.requestType = MessageType.MESSAGE
@@ -64,7 +65,6 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     def handleGetRequest ( self, request ) :
         print ( "Handling GET request" )
-        pprint ( "Still handing GET request ")
         if request.GET[ 'hub.verify_token' ] == ApplicationKey.getApplicationToken ( ) :
             return HttpResponse ( request.GET[ 'hub.challenge' ] )
         else :
@@ -114,10 +114,12 @@ class FacebookComm ( ) :
     # return  : user's first name
     # ------------------------------------------------------------------------- #
     def getUserFirstName ( self, facebookId ) :
-        printf ( "fetching first name" )
+        print ( "fetching first name" )
         response = requests.get (
-            'https://graph.facebook.com/v2.6/' + facebookId + '?access_token=' + ApplicationKey.applicationKey )
+            'https://graph.facebook.com/v2.6/' + str(facebookId) + '?access_token=' + ApplicationKey.applicationKey )
         responseData = response.json ( )
+        
+        pprint ( responseData ) 
 
         if ('first_name' in responseData) :
             return responseData[ 'first_name' ]
@@ -148,7 +150,7 @@ class FacebookComm ( ) :
             session[ 'facebookId' ] = facebookData.facebookId
             # todo set expiration data
 
-            printf ( "Sending greeting" )
+            print ( "Sending greeting" )
             self.sendGreeting( facebookData.facebookId )
             self.sendConfirmationButtons( facebookData.facebookId )
 
