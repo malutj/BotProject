@@ -63,7 +63,8 @@ class FacebookComm ( ) :
     # return  : HttpResponse
     # ------------------------------------------------------------------------- #
     def handleGetRequest ( self, request ) :
-
+        print ( "Handling GET request" )
+        pprint ( "Still handing GET request ")
         if request.GET[ 'hub.verify_token' ] == ApplicationKey.getApplicationToken ( ) :
             return HttpResponse ( request.GET[ 'hub.challenge' ] )
         else :
@@ -96,9 +97,11 @@ class FacebookComm ( ) :
                 print ( message )
                 facebookData = FacebookData ( message, pageId, updateTime )
 
-                if (facebookData.requestType == MessageType.MESSAGE) :
+                if (facebookData.requestType == MessageType.MESSAGE ):
+                    print ( "Processing message" )
                     self.processMessage ( facebookData, session )
-                elif (facebookData.requestType == MessageType.POSTBACK) :
+                elif (facebookData.requestType == MessageType.POSTBACK ):
+                    print ( "Processing postback" )
                     self.processPostback ( facebookData, session )
                     # todo handle delivery type messages?
 
@@ -111,7 +114,7 @@ class FacebookComm ( ) :
     # return  : user's first name
     # ------------------------------------------------------------------------- #
     def getUserFirstName ( self, facebookId ) :
-
+        printf ( "fetching first name" )
         response = requests.get (
             'https://graph.facebook.com/v2.6/' + facebookId + '?access_token=' + ApplicationKey.applicationKey )
         responseData = response.json ( )
@@ -130,14 +133,22 @@ class FacebookComm ( ) :
 
         if ('facebookId' in session) :
             # continue the conversation
-            nextMessage = "What's the best email address for you?"
-            self.sendMessage ( facebookData.facebookId, nextMessage )
+            # todo not sure how I need to respond here. They said something but it wasn't using a button press
+            #nextMessage = "What's the best email address for you?"
+            #self.sendMessage ( facebookData.facebookId, nextMessage )
+            print ( facebookData.text )
+            if ( facebookData.text == 'clear' ):
+                session.flush ( )
+            else:
+                self.sendMessage ( facebookData.facebookId, facebookData.text )
 
         else :
             # create session and say hi
+            print ( "Setting session id" )
             session[ 'facebookId' ] = facebookData.facebookId
             # todo set expiration data
 
+            printf ( "Sending greeting" )
             self.sendGreeting( facebookData.facebookId )
             self.sendConfirmationButtons( facebookData.facebookId )
 
@@ -153,6 +164,8 @@ class FacebookComm ( ) :
 
 
     def sendConfirmationButtons ( self, facebookId ):
+
+        print ( "Sending confirmation buttons" )
         post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
         response_msg = json.dumps ( { "recipient": { "id": facebookId }, "message": {
             "attachment": { "type": "template",
@@ -168,9 +181,11 @@ class FacebookComm ( ) :
 
         botMessage = None
         if ( facebookData.payload == "ok" ):
+            print ( "Received 'ok' postback" )
             botMessage = "What's the best email address for you?"
 
         elif ( facebookData.payload == "later" ):
+            print ( "Recieved 'later' postback" )
             botMessage = "Sounds good! Just stop back by when you want to schedule your free consultation"
 
         self.sendMessage ( facebookData.facebookId, botMessage )

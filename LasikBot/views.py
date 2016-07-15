@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from .FacebookComm import FacebookComm
 import json
+import pprint
 
 
 # Create your views here.
@@ -21,13 +22,14 @@ class LasikBot ( generic.View ):
 
     # GET request handler
     def get (self, request):
-
+        pprint ( "Received GET request" )
         # todo error handling
         return self.facebookComm.handleGetRequest ( request )
 
 
     def post ( self, request ):
 
+        pprint ( "Received POST request" )
         # Converts the text payload into a python dictionary
         incomingMessage = json.loads ( request.body.decode ( 'utf-8' ) )
 
