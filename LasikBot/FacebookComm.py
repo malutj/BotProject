@@ -1,7 +1,7 @@
 import json
 import requests
 from enum import Enum
-from .ApplicationKey import ApplicationKey
+from . import ApplicationKey
 from django.http import HttpResponse
 
 
