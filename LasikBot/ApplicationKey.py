@@ -2,7 +2,14 @@ import os
 
 class ApplicationKey ( ):
 
-    server = os.environ['SERVER']
+    server = None
+
+    try:
+        server = os.environ['SERVER']
+    except KeyError:
+        # todo error
+        print ("Unable to find 'SERVER' environment variable")
+
     botAlphaPageKey = ( 'EAARBuHDd8IYBAPVnZBaXX6kXbvwhHAADuMLXgZA5CXLMkNPvK5s0KzkzBl'
                         'jfFfUTut5K5DQeTKZBdEEY5bltZA601o5IrxUbMYL1xlBaLw9toCf329TPN'
                         'zcX9bdi6bpfowtQzeiYx5pXqm6amtHzfYNHGZAJR3IAGJPXZAfka7ZCQZDZD' )
