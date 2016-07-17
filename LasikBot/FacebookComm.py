@@ -38,6 +38,7 @@ class FacebookData ( ) :
 
 # This class serves as the interface to the Facebook Messenger API
 class FacebookComm ( ) :
+
     # ------------------------------------------------------------------------- #
     # Sends a POST message to Facebook Messenger
     # ------------------------------------------------------------------------- #
@@ -134,11 +135,10 @@ class FacebookComm ( ) :
     def processMessage ( self, facebookData, session ) :
 
         if ('facebookId' in session) :
+            print ( "Found session ID" )
+
             # continue the conversation
             # todo not sure how I need to respond here. They said something but it wasn't using a button press
-            #nextMessage = "What's the best email address for you?"
-            #self.sendMessage ( facebookData.facebookId, nextMessage )
-            print ( facebookData.text )
             if ( facebookData.text == 'clear' ):
                 session.flush ( )
             else:
@@ -146,7 +146,7 @@ class FacebookComm ( ) :
 
         else :
             # create session and say hi
-            print ( "Setting session id" )
+            print ( "Creating session ID" )
             session[ 'facebookId' ] = facebookData.facebookId
             # todo set expiration data
 
@@ -160,7 +160,7 @@ class FacebookComm ( ) :
         # todo fetch the <PRACTICE NAME> based on the page id
         welcomeMessage = ("Hello, " + self.getUserFirstName ( facebookId ) + "! Thanks for "
             "choosing <PRACTICE NAME>. I'm here to help you schedule your free LASIK consultation. "
-            "I just need a couple more pieces of information.")
+            "I just need a couple more pieces of information. Let's get started!")
 
         self.sendMessage ( facebookId, welcomeMessage )
 
@@ -171,9 +171,8 @@ class FacebookComm ( ) :
         post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
         response_msg = json.dumps ( { "recipient": { "id": facebookId }, "message": {
             "attachment": { "type": "template",
-                            "payload": { "template_type": "button", "text": "Let's get started!", "buttons": [
-                                { "type": "postback", "title": "Ok", "payload": "ok" },
-                                { "type": "postback", "title": "Maybe later", "payload": "later" } ] } } } } )
+                            "payload": { "template_type": "button", "text": "", "buttons": [
+                                { "type": "postback", "title": "Ok", "payload": "ok" } ] } } } } )
 
         status = requests.post ( post_message_url, headers = { "Content-Type": "application/json" }, data = response_msg )
         # todo error handling
