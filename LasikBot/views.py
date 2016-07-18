@@ -7,6 +7,15 @@ from .FacebookComm import FacebookComm
 import json
 from pprint import pprint
 
+
+def session_test ( request ):
+    if ( 'test_var' in request.session):
+        print ("Found test var: ", request.session['test_var'])
+    else:
+        print ("Test var not found. Saving now")
+        request.session['test_var'] = 'jason'
+        print ("Test var saved: ", request.session['test_var'])
+
 # Create your views here.
 class LasikBot ( generic.View ):
 

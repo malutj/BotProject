@@ -16,9 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from LasikBot.views import LasikBot
+from LasikBot import views
 
 
 urlpatterns = [
     url ( r'^admin/', admin.site.urls ),
-    url ( r'^4815402eee0f0b791bb30b782ae435f35182d33abb93256d0f/', LasikBot.as_view(), name = "LasikBot" )
+    url ( r'^4815402eee0f0b791bb30b782ae435f35182d33abb93256d0f/', LasikBot.as_view(), name = "LasikBot" ),
+    url ( r'^session_test/', views.session_test, name = "Session Test")
 ]
