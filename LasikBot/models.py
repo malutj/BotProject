@@ -4,7 +4,7 @@ from django.db import models
 class FacebookUser ( models.Model ):
 
     def __str__ ( self ):
-        return ( self.firstName + " [" + self.emailAddress + "]" )
+        return ( self.firstName + " [" + self.facebookId + "]" )
     facebookId = models.CharField ( max_length = 100, null = False, blank = False, unique = True )
     firstName = models.CharField ( max_length = 25, null = True, blank = True, unique = False )
     # todo should I make the email field unique?
@@ -13,10 +13,10 @@ class FacebookUser ( models.Model ):
 
 
 class Client ( models.Model ):
-    
+
     def __str__ ( self ):
         return self.practiceName
-    
+
     facebookPageId = models.CharField ( max_length = 100, null = False, blank = False, unique = True )
     # todo should I make the practice name field unique?
     practiceName = models.CharField ( max_length = 100, null = False, blank = False, unique = False )
