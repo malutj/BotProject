@@ -19,6 +19,7 @@ class FacebookData ( ) :
     pageId      = None
     updateTime  = None
     facebookId  = None
+    firstName   = None
     text        = None
     payload     = None
     requestType = None
@@ -155,7 +156,7 @@ class FacebookComm ( ) :
 
             # IF EMAIL IS IN DATABASE
             if ( user.emailAddress is not None ):
-                print ("Checking to see if they have a consult bookded")
+                print ("Checking to see if they have a consult booked")
                 self.sendMessage ( facebookData.facebookId, "I'm checking to see if you already have a consultation scheduled")
                 # IF THEY HAVE AN APPOINTMENT BOOKED
                     # IF THE CONSULTATION IS IN THE PAST
@@ -182,12 +183,17 @@ class FacebookComm ( ) :
             # SEND GREETING
             print ( "Saving new user and sending greeting" )
             user = FacebookUser ( facebookId = facebookData.facebookId )
+
+            facebookData.firstName = self.getUserFirstName ( facebookData.facebookId )
+            if ( facebookData.firstName is not None ):
+                user.firstName = facebookData.firstName
+
             user.save()
             self.sendGreeting( facebookData )
 
 
     def sendGreeting ( self, facebookData ):
-        firstName = self.getUserFirstName ( facebookData.facebookId )
+
         practiceName = None
         intro = "Hey there!"
 
@@ -196,8 +202,8 @@ class FacebookComm ( ) :
         except Client.DoesNotExist:
             practiceName = "<PRACTICE NAME>"
 
-        if ( firstName is not None ):
-            intro = "Hi, " + firstName + "!"
+        if ( facebookData.firstName is not None ):
+            intro = "Hi, " + facebookData.firstName + "!"
 
         # todo fetch the <PRACTICE NAME> based on the page id
         welcomeMessage = ( intro + " Thanks for "
