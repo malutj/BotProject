@@ -144,7 +144,7 @@ class FacebookComm:
     def process_message(self, facebook_data):
 
         try:
-            user = FacebookUser.objects.get(facebookId=facebook_data.facebook_id)
+            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
         except FacebookUser.DoesNotExist:
             user = None
 
@@ -155,9 +155,9 @@ class FacebookComm:
             ####################
             # FOR DEV PURPOSES #
             ####################
-            if ( facebookData.text == 'delete'):
+            if ( facebook_data.text == 'delete'):
                 user.delete()
-                self.sendMessage ( facebookData.facebookId, "DELETED")
+                self.send_message ( facebook_data.facebook_id, "DELETED")
                 return
 
             # IF EMAIL IS IN DATABASE
@@ -167,8 +167,8 @@ class FacebookComm:
                 if user.phone_number is not None:
                     print("We have phone number. Checking for consultation")
                     # IF THEY HAVE AN APPOINTMENT BOOKED
-                    consultation = Lead.objects.filter(facebookId=facebook_data.facebook_id,
-                                                       clientId=facebook_data.page_id)
+                    consultation = Lead.objects.filter(facebook_id=facebook_data.facebook_id,
+                                                       client_id=facebook_data.page_id)
                     if len(consultation) == 1:
                         print("We have a scheduled consultation")
                         # IF THE CONSULTATION IS IN THE PAST
@@ -204,7 +204,7 @@ class FacebookComm:
         else:
             # SEND GREETING
             print("Saving new user and sending greeting")
-            user = FacebookUser(facebookId=facebook_data.facebookId)
+            user = FacebookUser(facebook_id=facebook_data.facebook_id)
 
             facebook_data.first_name = self.get_user_first_name(facebook_data.facebook_id)
             if facebook_data.first_name is not None:
@@ -217,7 +217,7 @@ class FacebookComm:
         intro = "Hey there!"
 
         try:
-            practice_name = Client.objects.get(facebookPageId=facebook_data.page_id).practiceName
+            practice_name = Client.objects.get(facebook_page_id=facebook_data.page_id).practice_name
         except Client.DoesNotExist:
             practice_name = "<PRACTICE NAME>"
 
