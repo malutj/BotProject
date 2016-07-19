@@ -182,9 +182,18 @@ class FacebookComm:
                         # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
                 else:
                     print("We don't have phone number. See if that's what they sent")
+                    # SAVE THE PHONE NUMBER AND LET THEM KNOW WE MIGHT TEXT THEM. SEE IF THAT'S OK
                     if self.phone_number_is_valid(facebook_data.text):
                         user.phone_number = facebook_data.text
                         user.save()
+
+                        message = "Great! Side note - we sometimes send text messages for " \
+                                  "reminders and such. Are you good with texting?"
+                        button_payload = [{"type": "postback", "title": "YES", "payload": "YES TEXTING"},
+                                          {"type": "postback", "title": "NO", "payload": "NO TEXTING"}]
+
+                        self.send_buttons(facebook_data.facebook_id, message, button_payload)
+
                     else:
                         message = "Sorry, that doesn't appear to be a valid phone number. " \
                                   "Can you please re-enter it? (xxx-xxx-xxxx)"
@@ -249,16 +258,39 @@ class FacebookComm:
         # todo error handling
 
     def process_postback(self, facebook_data):
-        message = None
         if facebook_data.payload == "OK":
             print("Received 'ok' postback")
             message = "What's the best email address for you?"
+
+        elif facebook_data.payload == "YES TEXTING":
+            print("User is ok with texting")
+
+            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
+            user.ok_to_text = True
+            user.save()
+            message = "Perfect! Now that I have your info, let's figure out " \
+                      "the best day and time that works for you. The appointment " \
+                      "is free, and it lasts about 1 hour. Which of these options " \
+                      "works best for you?"
+
+        elif facebook_data.payload == "NO TEXTING":
+            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
+            user.ok_to_text = False
+            user.save()
+            message = "Sounds good, we'll give you a call instead! Now that I have " \
+                      "your info, let's figure out the best day and time that works " \
+                      "for you. The appointment is free, and it lasts about 1 hour. " \
+                      "Which of these options works best for you?"
 
         elif facebook_data.payload == "later":
             print("Received 'later' postback")
             message = "Sounds good! Just stop back by when you want to schedule your free consultation"
 
-        self.send_message(facebook_data.facebook_id, message)
+        else:
+            message = None
+
+        if message is not None:
+            self.send_message(facebook_data.facebook_id, message)
 
     @staticmethod
     def phone_number_is_valid(text):

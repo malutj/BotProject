@@ -9,6 +9,7 @@ class FacebookUser(models.Model):
     # todo should I make the email field unique?
     email_address = models.EmailField(max_length=255, null=True, blank=True, unique=False)
     phone_number = models.CharField(max_length=10, null=True, blank=True, unique=False)
+    ok_to_text = models.NullBooleanField(null=True, blank=True)
 
     def __str__(self):
         return self.first_name + " [" + self.facebook_id + "]"
