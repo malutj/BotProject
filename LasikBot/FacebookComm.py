@@ -187,7 +187,7 @@ class FacebookComm:
                         user.phone_number = facebook_data.text
                         user.save()
 
-                        message = "Great! Side note - we sometimes send text messages for " \
+                        message = "Great! As a side note, we sometimes send text messages for " \
                                   "reminders and such. Are you good with texting?"
                         button_payload = [{"type": "postback", "title": "YES", "payload": "YES TEXTING"},
                                           {"type": "postback", "title": "NO", "payload": "NO TEXTING"}]
@@ -226,7 +226,6 @@ class FacebookComm:
             self.send_greeting(facebook_data)
 
     def send_greeting(self, facebook_data):
-        intro = "Hey there!"
 
         try:
             practice_name = Client.objects.get(facebook_page_id=facebook_data.page_id).practice_name
@@ -235,6 +234,8 @@ class FacebookComm:
 
         if facebook_data.first_name is not None:
             intro = "Hi, " + facebook_data.first_name + "!"
+        else:
+            intro = "Hey there!"
 
         # todo fetch the <PRACTICE NAME> based on the page id
         welcome_message = (intro + " Thanks for choosing " + practice_name +
@@ -269,8 +270,8 @@ class FacebookComm:
             user.ok_to_text = True
             user.save()
             message = "Perfect! Now that I have your info, let's figure out " \
-                      "the best day and time that works for you. The appointment " \
-                      "is free, and it lasts about 1 hour. Which of these options " \
+                      "the day and time that works best for you. The appointment " \
+                      "is free and it lasts about 1 hour. Which of these options " \
                       "works best for you?"
 
         elif facebook_data.payload == "NO TEXTING":
@@ -278,8 +279,8 @@ class FacebookComm:
             user.ok_to_text = False
             user.save()
             message = "Sounds good, we'll give you a call instead! Now that I have " \
-                      "your info, let's figure out the best day and time that works " \
-                      "for you. The appointment is free, and it lasts about 1 hour. " \
+                      "your info, let's figure out the day and time that works best " \
+                      "for you. The appointment is free and it lasts about 1 hour. " \
                       "Which of these options works best for you?"
 
         elif facebook_data.payload == "later":
