@@ -5,3 +5,4 @@ from LasikBot import models
 admin.site.register( models.Client )
 admin.site.register( models.Lead )
 admin.site.register( models.FacebookUser)
+
