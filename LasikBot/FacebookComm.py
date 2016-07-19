@@ -4,6 +4,7 @@ from enum import Enum
 from . import ApplicationKey
 from django.http import HttpResponse
 from pprint import pprint
+from .models import Client, FacebookUser, Lead, Availability
 
 
 class MessageType ( Enum ) :
@@ -138,24 +139,31 @@ class FacebookComm ( ) :
     # STATIC METHODS
     # ------------------------------------------------------------------------- #
     def processMessage ( self, facebookData ) :
-        # check to see if
 
-        # continue the conversation
-        # todo not sure how I need to respond here. They said something but it wasn't using a button press
-        if ( facebookData.text == 'clear' ):
-            session.flush ( )
-            else:
-                self.sendMessage ( facebookData.facebookId, facebookData.text )
+        user = FacebookUser.objects.get ( pk=facebookData.facebookId )
 
-        else :
-            # create session and say hi
-            print ( "Creating session ID" )
-            session[ 'facebookId' ] = facebookData.facebookId
-            # todo set expiration data
+        # IF USER IN DATABASE
+        if ( user is not None ):
+            print ( "I have talked to this user before" )
 
-            print ( "Sending greeting" )
+            # IF EMAIL IS IN DATABASE
+                # IF THEY HAVE AN APPOINTMENT BOOKED
+                    # IF THE CONSULTATION IS IN THE PAST
+                        # IGNORE ??
+                    # ELSE
+                        # ASK IF THEY WOULD LIKE TO RESCHEDULE
+                # ELSE
+                    # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
+            # ELSE
+                # SAY GOOD TO SEE YOU AGAIN AND ASK FOR EMAIL ADDRESS
+        # ELSE
+            # SEND GREETING
+
+        # DATABASE SCHEMA
+        else:
+            print ( "New user. Sending greeting" )
             self.sendGreeting( facebookData.facebookId )
-            self.sendConfirmationButtons( facebookData.facebookId )
+
 
 
     def sendGreeting ( self, facebookId ):
@@ -165,19 +173,23 @@ class FacebookComm ( ) :
             "choosing <PRACTICE NAME>. I'm here to help you schedule your free LASIK consultation. "
             "I just need a couple more pieces of information. Let's get started!")
 
-        self.sendMessage ( facebookId, welcomeMessage )
+        buttonPayload = [ { "type": "postback", "title": "OK", "payload": "OK" } ]
+
+        self.sendConfirmationButtons ( facebookId, welcomeMessage, buttonPayload )
 
 
-    def sendConfirmationButtons ( self, facebookId ):
 
-        print ( "Sending confirmation buttons" )
-        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
-        response_msg = json.dumps ( { "recipient": { "id": facebookId }, "message": {
+    def sendButtons ( self, facebookId, message, payload ):
+
+        print ( "Sending callback buttons" )
+        postMessageUrl = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
+        callbackMessage = json.dumps ( { "recipient": { "id": facebookId }, "message": {
             "attachment": { "type": "template",
-                            "payload": { "template_type": "button", "text": "", "buttons": [
-                                { "type": "postback", "title": "Ok", "payload": "ok" } ] } } } } )
+                            "payload": { "template_type": "button", "text": message, "buttons": payload }
+                            } } } )
 
-        status = requests.post ( post_message_url, headers = { "Content-Type": "application/json" }, data = response_msg )
+        status = requests.post ( postMessageUrl, headers = { "Content-Type": "application/json" },
+                                 data = callbackMessage )
         # todo error handling
 
 
