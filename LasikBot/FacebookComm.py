@@ -31,6 +31,7 @@ class FacebookData ( ) :
         if ('message' in data) :
             self.requestType = MessageType.MESSAGE
             self.text = data[ 'message' ][ 'text' ]
+
         elif ('postback' in data) :
             self.requestType = MessageType.POSTBACK
             self.payload = data[ 'postback' ][ 'payload' ]
@@ -80,7 +81,8 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # return  : HttpResponse
     # ------------------------------------------------------------------------- #
-    def handlePostRequest ( self, request, session ) :
+    def handlePostRequest ( self, request ):
+        print ("FacebookComm.handlePostRequest")
 
         # the format for incoming Facebook messages is the following:
         #   "object" : "page"
@@ -100,10 +102,11 @@ class FacebookComm ( ) :
 
                 if (facebookData.requestType == MessageType.MESSAGE ):
                     print ( "Processing message" )
-                    self.processMessage ( facebookData, session )
+                    self.processMessage ( facebookData )
+
                 elif (facebookData.requestType == MessageType.POSTBACK ):
                     print ( "Processing postback" )
-                    self.processPostback ( facebookData, session )
+                    self.processPostback ( facebookData )
                     # todo handle delivery type messages?
 
 
@@ -116,11 +119,13 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     def getUserFirstName ( self, facebookId ) :
         print ( "fetching first name" )
-        response = requests.get (
-            'https://graph.facebook.com/v2.6/' + str(facebookId) + '?access_token=' + ApplicationKey.applicationKey )
+        response = requests.get ('https://graph.facebook.com/v2.6/' +
+                                 str(facebookId) + '?access_token=' +
+                                 ApplicationKey.applicationKey )
+
         responseData = response.json ( )
-        
-        pprint ( responseData ) 
+
+        pprint ( responseData )
 
         if ('first_name' in responseData) :
             return responseData[ 'first_name' ]
@@ -132,15 +137,13 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # STATIC METHODS
     # ------------------------------------------------------------------------- #
-    def processMessage ( self, facebookData, session ) :
+    def processMessage ( self, facebookData ) :
+        # check to see if
 
-        if ('facebookId' in session) :
-            print ( "Found session ID" )
-
-            # continue the conversation
-            # todo not sure how I need to respond here. They said something but it wasn't using a button press
-            if ( facebookData.text == 'clear' ):
-                session.flush ( )
+        # continue the conversation
+        # todo not sure how I need to respond here. They said something but it wasn't using a button press
+        if ( facebookData.text == 'clear' ):
+            session.flush ( )
             else:
                 self.sendMessage ( facebookData.facebookId, facebookData.text )
 

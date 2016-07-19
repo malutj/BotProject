@@ -11,10 +11,14 @@ from pprint import pprint
 def session_test ( request ):
     if ( 'test_var' in request.session):
         print ("Found test var: ", request.session['test_var'])
+        print ("Session key: ", request.session.session_key)
     else:
         print ("Test var not found. Saving now")
+        print ("Session key: ", request.session.session_key)
         request.session['test_var'] = 'jason'
         print ("Test var saved: ", request.session['test_var'])
+        print ("Session key: ", request.session.session_key)
+    return HttpResponse()
 
 # Create your views here.
 class LasikBot ( generic.View ):
@@ -37,10 +41,9 @@ class LasikBot ( generic.View ):
 
     def post ( self, request ):
         print ( "Received POST request" )
-        pprint(request.session)
-        # Converts the text payload into a python dictionary
+        # Convert the text payload into a python dictionary
         incomingMessage = json.loads ( request.body.decode ( 'utf-8' ) )
 
-        self.facebookComm.handlePostRequest ( incomingMessage, request.session )
+        self.facebookComm.handlePostRequest ( incomingMessage, request )
 
         return HttpResponse ( )
