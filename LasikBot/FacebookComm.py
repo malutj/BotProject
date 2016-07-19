@@ -154,6 +154,14 @@ class FacebookComm ( ) :
         if ( user is not None ):
             print ( "I have talked to this user before" )
 
+            ####################
+            # FOR DEV PURPOSES #
+            ####################
+            if ( facebookData.text == 'delete'):
+                user.delete()
+                self.sendMessage ( facebookData.facebookId, "DELETED")
+                return
+
             # IF EMAIL IS IN DATABASE
             if ( user.emailAddress is not None ):
                 print ("Checking to see if they have a consult booked")
@@ -178,7 +186,7 @@ class FacebookComm ( ) :
                     facebookData.payload = "OK"
                     self.processPostback ( facebookData )
 
-            
+
         else:
             # SEND GREETING
             print ( "Saving new user and sending greeting" )
@@ -198,7 +206,7 @@ class FacebookComm ( ) :
         intro = "Hey there!"
 
         try:
-            practiceName = Client.objects.get ( facebookPageId = facebookData.pageId )
+            practiceName = Client.objects.get ( facebookPageId = facebookData.pageId ).practiceName
         except Client.DoesNotExist:
             practiceName = "<PRACTICE NAME>"
 
