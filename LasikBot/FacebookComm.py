@@ -155,9 +155,9 @@ class FacebookComm:
             ####################
             # FOR DEV PURPOSES #
             ####################
-            if ( facebook_data.text == 'delete'):
+            if facebook_data.text == 'delete':
                 user.delete()
-                self.send_message ( facebook_data.facebook_id, "DELETED")
+                self.send_message(facebook_data.facebook_id, "DELETED")
                 return
 
             # IF EMAIL IS IN DATABASE
