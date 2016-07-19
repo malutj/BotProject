@@ -4,46 +4,45 @@ from enum import Enum
 from . import ApplicationKey
 from django.http import HttpResponse
 from pprint import pprint
-from .models import Client, FacebookUser, Lead, Availability
-from django.core.validators import validate_email
+from .models import Client, FacebookUser, Lead
+from django.core.validators import validate_email, RegexValidator
 from django.core.exceptions import ValidationError
 
 
-class MessageType ( Enum ) :
-    MESSAGE  = 0
+class MessageType(Enum):
+    MESSAGE = 0
     POSTBACK = 1
     DELIVERY = 2
 
 
-class FacebookData ( ) :
-    pageId      = None
-    updateTime  = None
-    facebookId  = None
-    firstName   = None
-    text        = None
-    payload     = None
-    requestType = None
+class FacebookData:
+    page_id = None
+    update_time = None
+    facebook_id = None
+    first_name = None
+    text = None
+    payload = None
+    request_type = None
 
-    def __init__ ( self, data, pageId, updateTime ) :
+    def __init__(self, data, page_id, update_time):
 
-        self.pageId = pageId
-        self.updateTime = updateTime
+        self.page_id = page_id
+        self.update_time = update_time
 
-        if ('sender' in data) :
-            self.facebookId = data[ 'sender' ][ 'id' ]
+        if 'sender' in data:
+            self.facebook_id = data['sender']['id']
 
-        if ('message' in data) :
-            self.requestType = MessageType.MESSAGE
-            self.text = data[ 'message' ][ 'text' ]
+        if 'message' in data:
+            self.request_type = MessageType.MESSAGE
+            self.text = data['message']['text']
 
-        elif ('postback' in data) :
-            self.requestType = MessageType.POSTBACK
-            self.payload = data[ 'postback' ][ 'payload' ]
+        elif 'postback' in data:
+            self.request_type = MessageType.POSTBACK
+            self.payload = data['postback']['payload']
 
 
 # This class serves as the interface to the Facebook Messenger API
-class FacebookComm ( ) :
-
+class FacebookComm:
     # ------------------------------------------------------------------------- #
     # Sends a POST message to Facebook Messenger
     # ------------------------------------------------------------------------- #
@@ -52,15 +51,16 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # return     : n/a
     # ------------------------------------------------------------------------- #
-    def sendMessage ( self, facebookID, message ) :
+    @staticmethod
+    def send_message(facebook_id, message):
 
         # todo Eventually I'll need to fetch the pageKey from the database as each will be unique to a customer
-        pageKey = ApplicationKey.applicationKey  # todo error handling if this is doesn't get set
-        postUrl = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + pageKey
-        response_msg = json.dumps ( { "recipient" : { "id" : facebookID }, "message" : { "text" : message } } )
+        page_key = ApplicationKey.application_key  # todo error handling if this is doesn't get set
+        post_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + page_key
+        response_msg = json.dumps({"recipient": {"id": facebook_id}, "message": {"text": message}})
 
         # todo: error handling
-        requests.post ( postUrl, headers = { "Content-Type" : "application/json" }, data = response_msg )
+        requests.post(post_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
     # ------------------------------------------------------------------------- #
     # Handles a Facebook GET request
@@ -69,14 +69,15 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # return  : HttpResponse
     # ------------------------------------------------------------------------- #
-    def handleGetRequest ( self, request ) :
-        print ( "Handling GET request" )
-        if request.GET[ 'hub.verify_token' ] == ApplicationKey.getApplicationToken ( ) :
-            return HttpResponse ( request.GET[ 'hub.challenge' ] )
-        else :
+    @staticmethod
+    def handle_get_request(request):
+        print("Handling GET request")
+        if request.GET['hub.verify_token'] == ApplicationKey.get_application_token():
+            return HttpResponse(request.GET['hub.challenge'])
+        else:
             # todo error handling
-            print ( "Error in authentication" )
-            return HttpResponse ( "Error in authentication" )
+            print("Error in authentication")
+            return HttpResponse("Error in authentication")
 
     # ------------------------------------------------------------------------- #
     # Handles a Facebook POST request
@@ -85,8 +86,8 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # return  : HttpResponse
     # ------------------------------------------------------------------------- #
-    def handlePostRequest ( self, request ):
-        print ("FacebookComm.handlePostRequest")
+    def handle_post_request(self, request):
+        print("FacebookComm.handlePostRequest")
 
         # the format for incoming Facebook messages is the following:
         #   "object" : "page"
@@ -96,23 +97,22 @@ class FacebookComm ( ) :
 
         # Facebook recommends going through every entry since they might send
         # multiple messages in a single call during high load
-        for entry in request[ 'entry' ] :
-            pageId = entry[ 'id' ]
-            updateTime = entry[ 'time' ]
+        for entry in request['entry']:
+            page_id = entry['id']
+            update_time = entry['time']
 
-            for message in entry[ 'messaging' ] :
-                print ( message )
-                facebookData = FacebookData ( message, pageId, updateTime )
+            for message in entry['messaging']:
+                print(message)
+                facebook_data = FacebookData(message, page_id, update_time)
 
-                if (facebookData.requestType == MessageType.MESSAGE ):
-                    print ( "Processing message" )
-                    self.processMessage ( facebookData )
+                if facebook_data.request_type == MessageType.MESSAGE:
+                    print("Processing message")
+                    self.process_message(facebook_data)
 
-                elif (facebookData.requestType == MessageType.POSTBACK ):
-                    print ( "Processing postback" )
-                    self.processPostback ( facebookData )
+                elif facebook_data.request_type == MessageType.POSTBACK:
+                    print("Processing postback")
+                    self.process_postback(facebook_data)
                     # todo handle delivery type messages?
-
 
     # ------------------------------------------------------------------------- #
     # Retrieves a Facebook user's first name
@@ -121,125 +121,149 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     # return  : user's first name
     # ------------------------------------------------------------------------- #
-    def getUserFirstName ( self, facebookId ) :
-        print ( "fetching first name" )
-        response = requests.get ('https://graph.facebook.com/v2.6/' +
-                                 str(facebookId) + '?access_token=' +
-                                 ApplicationKey.applicationKey )
+    @staticmethod
+    def get_user_first_name(facebook_id):
+        print("fetching first name")
+        response = requests.get('https://graph.facebook.com/v2.6/' +
+                                str(facebook_id) + '?access_token=' +
+                                ApplicationKey.application_key)
 
-        responseData = response.json ( )
+        response_data = response.json()
 
-        pprint ( responseData )
+        pprint(response_data)
 
-        if ('first_name' in responseData) :
-            return responseData[ 'first_name' ]
-        else :
+        if 'first_name' in response_data:
+            return response_data['first_name']
+        else:
             # todo error handling
             return None
-
 
     # ------------------------------------------------------------------------- #
     # STATIC METHODS
     # ------------------------------------------------------------------------- #
-    def processMessage ( self, facebookData ) :
-
-        user = None
+    def process_message(self, facebook_data):
 
         try:
-            user = FacebookUser.objects.get ( facebookId = facebookData.facebookId )
+            user = FacebookUser.objects.get(facebookId=facebook_data.facebook_id)
         except FacebookUser.DoesNotExist:
-           user = None
+            user = None
 
         # IF USER IN DATABASE
-        if ( user is not None ):
-            print ( "I have talked to this user before" )
+        if user is not None:
+            print("We have this user. Checking for email")
 
             # IF EMAIL IS IN DATABASE
-            if ( user.emailAddress is not None ):
-                print ("Checking to see if they have a consult booked")
-                self.sendMessage ( facebookData.facebookId, "I'm checking to see if you already have a consultation scheduled")
-                # IF THEY HAVE AN APPOINTMENT BOOKED
-                    # IF THE CONSULTATION IS IN THE PAST
-                        # IGNORE ??
-                    # ELSE
-                        # ASK IF THEY WOULD LIKE TO RESCHEDULE
-                # ELSE
-                    # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
-            else:
-                # SEE IF THEY PROVIDED A VALID EMAIL ADDRESS
-                try:
-                    validate_email ( facebookData.text )
-                    # SAVE THE EMAIL
-                    user.emailAddress = facebookData.text
-                    user.save ( )
-                except ValidationError:
-                    # ASK FOR THE EMAIL AGAIN
-                    print ( "I still need to get an email" )
-                    facebookData.payload = "OK"
-                    self.processPostback ( facebookData )
+            if user.email_address is not None:
+                print("We have email. Checking for phone number")
 
-            
+                if user.phone_number is not None:
+                    print("We have phone number. Checking for consultation")
+                    # IF THEY HAVE AN APPOINTMENT BOOKED
+                    consultation = Lead.objects.filter(facebookId=facebook_data.facebook_id,
+                                                       clientId=facebook_data.page_id)
+                    if len(consultation) == 1:
+                        print("We have a scheduled consultation")
+                        # IF THE CONSULTATION IS IN THE PAST
+                        # IGNORE ??
+                        # ELSE
+                        # ASK IF THEY WOULD LIKE TO RESCHEDULE
+                    # ELSE
+                    else:
+                        print("We don't have a scheduled consultation yet")
+
+                        # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
+                else:
+                    print("We don't have phone number. See if that's what they sent")
+                    if self.phone_number_is_valid(facebook_data.text):
+                        user.phone_number = facebook_data.text
+                        user.save()
+                    else:
+                        message = "Sorry, that doesn't appear to be a valid phone number. " \
+                                  "Can you please re-enter it? (xxx-xxx-xxxx)"
+                        self.send_message(facebook_data.facebook_id, message)
+
+            else:
+                print("We don't have email. See if that's what they sent")
+                # SEE IF THEY PROVIDED A VALID EMAIL ADDRESS
+                if self.email_is_valid(facebook_data.text):
+                    # SAVE THE EMAIL AND REQUEST PHONE NUMBER
+                    user.email_address = facebook_data.text
+                    user.save()
+                else:
+                    # ASK FOR THE EMAIL AGAIN
+                    facebook_data.payload = "OK"
+                    self.process_postback(facebook_data)
+
         else:
             # SEND GREETING
-            print ( "Saving new user and sending greeting" )
-            user = FacebookUser ( facebookId = facebookData.facebookId )
+            print("Saving new user and sending greeting")
+            user = FacebookUser(facebookId=facebook_data.facebookId)
 
-            facebookData.firstName = self.getUserFirstName ( facebookData.facebookId )
-            if ( facebookData.firstName is not None ):
-                user.firstName = facebookData.firstName
+            facebook_data.first_name = self.get_user_first_name(facebook_data.facebook_id)
+            if facebook_data.first_name is not None:
+                user.first_name = facebook_data.first_name
 
             user.save()
-            self.sendGreeting( facebookData )
+            self.send_greeting(facebook_data)
 
-
-    def sendGreeting ( self, facebookData ):
-
-        practiceName = None
+    def send_greeting(self, facebook_data):
         intro = "Hey there!"
 
         try:
-            practiceName = Client.objects.get ( facebookPageId = facebookData.pageId )
+            practice_name = Client.objects.get(facebookPageId=facebook_data.page_id)
         except Client.DoesNotExist:
-            practiceName = "<PRACTICE NAME>"
+            practice_name = "<PRACTICE NAME>"
 
-        if ( facebookData.firstName is not None ):
-            intro = "Hi, " + facebookData.firstName + "!"
+        if facebook_data.first_name is not None:
+            intro = "Hi, " + facebook_data.first_name + "!"
 
         # todo fetch the <PRACTICE NAME> based on the page id
-        welcomeMessage = ( intro + " Thanks for "
-            "choosing " + practiceName + ". I'm here to help you schedule your free LASIK consultation. "
-            "I just need a couple more pieces of information. Let's get started!")
+        welcome_message = (intro + " Thanks for choosing " + practice_name +
+                           ". I'm here to help you schedule your free LASIK consultation. "
+                           "I just need a couple more pieces of information. Let's get started!")
 
-        buttonPayload = [ { "type": "postback", "title": "OK", "payload": "OK" } ]
+        button_payload = [{"type": "postback", "title": "OK", "payload": "OK"}]
 
-        self.sendButtons ( facebookData.facebookId, welcomeMessage, buttonPayload )
+        self.send_buttons(facebook_data.facebook_id, welcome_message, button_payload)
 
+    @staticmethod
+    def send_buttons(facebook_id, message, payload):
+        print("Sending callback buttons")
+        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
+        callback_message = json.dumps({"recipient": {"id": facebook_id}, "message": {
+            "attachment": {"type": "template",
+                           "payload": {"template_type": "button", "text": message, "buttons": payload}
+                           }}})
 
-
-    def sendButtons ( self, facebookId, message, payload ):
-
-        print ( "Sending callback buttons" )
-        postMessageUrl = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.applicationKey
-        callbackMessage = json.dumps ( { "recipient": { "id": facebookId }, "message": {
-            "attachment": { "type": "template",
-                            "payload": { "template_type": "button", "text": message, "buttons": payload }
-                            } } } )
-
-        status = requests.post ( postMessageUrl, headers = { "Content-Type": "application/json" },
-                                 data = callbackMessage )
+        requests.post(post_message_url, headers={"Content-Type": "application/json"}, data=callback_message)
         # todo error handling
 
+    def process_postback(self, facebook_data):
+        message = None
+        if facebook_data.payload == "OK":
+            print("Received 'ok' postback")
+            message = "What's the best email address for you?"
 
-    def processPostback ( self, facebookData ) :
+        elif facebook_data.payload == "later":
+            print("Received 'later' postback")
+            message = "Sounds good! Just stop back by when you want to schedule your free consultation"
 
-        botMessage = None
-        if ( facebookData.payload == "OK" ):
-            print ( "Received 'ok' postback" )
-            botMessage = "What's the best email address for you?"
+        self.send_message(facebook_data.facebook_id, message)
 
-        elif ( facebookData.payload == "later" ):
-            print ( "Recieved 'later' postback" )
-            botMessage = "Sounds good! Just stop back by when you want to schedule your free consultation"
+    @staticmethod
+    def phone_number_is_valid(text):
+        phone_number_regex = r']*([0-9]{3}){1}[).\- ]*([0-9]{3}){1}[.\- ]*([0-9]{4}){1}$'
+        regex_validator = RegexValidator(phone_number_regex)
+        try:
+            regex_validator(text)
+            return True
+        except ValidationError:
+            return False
 
-        self.sendMessage ( facebookData.facebookId, botMessage )
-
+    @staticmethod
+    def email_is_valid(text):
+        try:
+            validate_email(text)
+            return True
+        except ValidationError:
+            return False
