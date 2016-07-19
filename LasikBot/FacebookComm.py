@@ -5,6 +5,8 @@ from . import ApplicationKey
 from django.http import HttpResponse
 from pprint import pprint
 from .models import Client, FacebookUser, Lead, Availability
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 
 class MessageType ( Enum ) :
@@ -152,10 +154,9 @@ class FacebookComm ( ) :
             print ( "I have talked to this user before" )
 
             # IF EMAIL IS IN DATABASE
-            if ( user.emailAddress is None ):
-                print ( "I still need to get an email" )
-                facebookData.payload = "OK"
-                processPostback ( facebookData )
+            if ( user.emailAddress is not None ):
+                print ("Checking to see if they have a consult bookded")
+                self.sendMessage ( facebookData.facebookId, "I'm checking to see if you already have a consultation scheduled")
                 # IF THEY HAVE AN APPOINTMENT BOOKED
                     # IF THE CONSULTATION IS IN THE PAST
                         # IGNORE ??
@@ -163,13 +164,19 @@ class FacebookComm ( ) :
                         # ASK IF THEY WOULD LIKE TO RESCHEDULE
                 # ELSE
                     # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
-            # ELSE
-                # IF THEY PROVIDED A VALID EMAIL ADDRESS 
+            else:
+                # SEE IF THEY PROVIDED A VALID EMAIL ADDRESS
+                try:
+                    validate_email ( facebookData.text )
                     # SAVE THE EMAIL
-                # ELSE
+                    user.emailAddress = facebookData.text
+                    user.save ( )
+                except ValidationError:
                     # ASK FOR THE EMAIL AGAIN
-                    
-                
+                    print ( "I still need to get an email" )
+                    facebookData.payload = "OK"
+                    self.processPostback ( facebookData )
+
             
         else:
             # SEND GREETING
