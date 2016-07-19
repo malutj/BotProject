@@ -140,13 +140,22 @@ class FacebookComm ( ) :
     # ------------------------------------------------------------------------- #
     def processMessage ( self, facebookData ) :
 
-        user = FacebookUser.objects.get ( pk=facebookData.facebookId )
+        user = None
+
+        try:
+            user = FacebookUser.objects.get ( facebookId = facebookData.facebookId )
+        except FacebookUser.DoesNotExist:
+           user = None
 
         # IF USER IN DATABASE
         if ( user is not None ):
             print ( "I have talked to this user before" )
 
             # IF EMAIL IS IN DATABASE
+            if ( user.emailAddress is None ):
+                print ( "I still need to get an email" )
+                facebookData.payload = "OK"
+                processPostback ( facebookData )
                 # IF THEY HAVE AN APPOINTMENT BOOKED
                     # IF THE CONSULTATION IS IN THE PAST
                         # IGNORE ??
@@ -155,27 +164,42 @@ class FacebookComm ( ) :
                 # ELSE
                     # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
             # ELSE
-                # SAY GOOD TO SEE YOU AGAIN AND ASK FOR EMAIL ADDRESS
-        # ELSE
-            # SEND GREETING
-
-        # DATABASE SCHEMA
+                # IF THEY PROVIDED A VALID EMAIL ADDRESS 
+                    # SAVE THE EMAIL
+                # ELSE
+                    # ASK FOR THE EMAIL AGAIN
+                    
+                
+            
         else:
-            print ( "New user. Sending greeting" )
-            self.sendGreeting( facebookData.facebookId )
+            # SEND GREETING
+            print ( "Saving new user and sending greeting" )
+            user = FacebookUser ( facebookId = facebookData.facebookId )
+            user.save()
+            self.sendGreeting( facebookData )
 
 
+    def sendGreeting ( self, facebookData ):
+        firstName = self.getUserFirstName ( facebookData.facebookId )
+        practiceName = None
+        intro = "Hey there!"
 
-    def sendGreeting ( self, facebookId ):
+        try:
+            practiceName = Client.objects.get ( facebookPageId = facebookData.pageId )
+        except Client.DoesNotExist:
+            practiceName = "<PRACTICE NAME>"
+
+        if ( firstName is not None ):
+            intro = "Hi, " + firstName + "!"
 
         # todo fetch the <PRACTICE NAME> based on the page id
-        welcomeMessage = ("Hello, " + self.getUserFirstName ( facebookId ) + "! Thanks for "
-            "choosing <PRACTICE NAME>. I'm here to help you schedule your free LASIK consultation. "
+        welcomeMessage = ( intro + " Thanks for "
+            "choosing " + practiceName + ". I'm here to help you schedule your free LASIK consultation. "
             "I just need a couple more pieces of information. Let's get started!")
 
         buttonPayload = [ { "type": "postback", "title": "OK", "payload": "OK" } ]
 
-        self.sendConfirmationButtons ( facebookId, welcomeMessage, buttonPayload )
+        self.sendButtons ( facebookData.facebookId, welcomeMessage, buttonPayload )
 
 
 
@@ -193,10 +217,10 @@ class FacebookComm ( ) :
         # todo error handling
 
 
-    def processPostback ( self, facebookData, session ) :
+    def processPostback ( self, facebookData ) :
 
         botMessage = None
-        if ( facebookData.payload == "ok" ):
+        if ( facebookData.payload == "OK" ):
             print ( "Received 'ok' postback" )
             botMessage = "What's the best email address for you?"
 

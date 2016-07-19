@@ -44,6 +44,6 @@ class LasikBot ( generic.View ):
         # Convert the text payload into a python dictionary
         incomingMessage = json.loads ( request.body.decode ( 'utf-8' ) )
 
-        self.facebookComm.handlePostRequest ( incomingMessage, request )
+        self.facebookComm.handlePostRequest ( incomingMessage )
 
         return HttpResponse ( )
