@@ -197,6 +197,9 @@ class FacebookComm:
                     # SAVE THE EMAIL AND REQUEST PHONE NUMBER
                     user.email_address = facebook_data.text
                     user.save()
+
+                    message = "Perfect! And what's your cell phone number?"
+                    self.send_message(facebook_data.facebook_id, message)
                 else:
                     # ASK FOR THE EMAIL AGAIN
                     facebook_data.payload = "OK"
