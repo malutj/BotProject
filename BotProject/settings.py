@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'BotProject.wsgi.application'
 if server == "HEROKU":
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.postgresql',
+            'ENGINE': 'django.db.postgresql_psycopg2',
             'NAME': 'de4v113fnmgjui',
             'USER': 'gaowijcwggvndi',
             'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
