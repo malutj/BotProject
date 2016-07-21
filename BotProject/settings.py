@@ -88,7 +88,7 @@ if server == "HEROKU":
     print ( "Using PRODUCTION database" )
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.postgresql',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'de4v113fnmgjui',
             'USER': 'gaowijcwggvndi',
             'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
