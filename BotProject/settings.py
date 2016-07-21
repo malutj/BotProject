@@ -92,9 +92,7 @@ if server == "HEROKU":
             'NAME': 'de4v113fnmgjui',
             'USER': 'gaowijcwggvndi',
             'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
-            'HOST': 'postgres://gaowijcwggvndi:nCBjzwAum10Q0yUsQmGW9rtWAs@ec2-'
-                    '54-235-208-3.compute-1.amazonaws.com:5432/de4v113fnmgjui',
-
+            'HOST': 'ec2-54-235-208-3.compute-1.amazonaws.com',
             'PORT': '5432',
         }
     }
