@@ -87,7 +87,7 @@ if server == "HEROKU":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.postgresql',
-            'NAME': '5432',
+            'NAME': 'de4v113fnmgjui',
             'USER': 'gaowijcwggvndi',
             'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
             'HOST': 'postgres://gaowijcwggvndi:nCBjzwAum10Q0yUsQmGW9rtWAs@ec2-'
