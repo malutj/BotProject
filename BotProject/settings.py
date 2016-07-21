@@ -12,17 +12,17 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+
 # Determine our operating environment
 try:
-    server = os.environ['SERVER']
+    server = os.environ[ 'SERVER' ]
 except KeyError:
     # todo error
     server = None
-    print("Unable to find 'SERVER' environment variable")
+    print ( "Unable to find 'SERVER' environment variable" )
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+BASE_DIR = os.path.dirname ( os.path.dirname ( os.path.abspath ( __file__ ) ) )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -31,10 +31,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '#9i*6@7me)&d2b*fzt75bm#9pdc0t@*52+4u=f8e6$09+nlucv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if (server == 'HEROKU'):
+    DEBUG = False
+else:
+    DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [ ]
 
 # Application definition
 
@@ -64,7 +66,7 @@ ROOT_URLCONF = 'BotProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -79,11 +81,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BotProject.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 if server == "HEROKU":
+    print ( "Using PRODUCTION database" )
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.postgresql_psycopg2',
@@ -98,16 +100,13 @@ if server == "HEROKU":
     }
 
 else:
+    print ( "Using DEVELOPMENT database" )
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'NAME': os.path.join ( BASE_DIR, 'db.sqlite3' ),
         }
     }
-
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -127,7 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
@@ -140,7 +138,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
