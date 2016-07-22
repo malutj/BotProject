@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'LasikBot.apps.LasikbotConfig'
+    'LasikBot.apps.LasikbotConfig',
+    'LasikBot'
 ]
 
 MIDDLEWARE_CLASSES = [
