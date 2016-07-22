@@ -4,7 +4,7 @@ from enum import Enum
 from . import ApplicationKey
 from django.http import HttpResponse
 from pprint import pprint
-from .models import Client, FacebookUser, Lead
+from .models import client, facebookuser, lead
 from django.core.validators import validate_email, RegexValidator
 from django.core.exceptions import ValidationError
 
@@ -144,8 +144,8 @@ class FacebookComm:
     def process_message(self, facebook_data):
 
         try:
-            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
-        except FacebookUser.DoesNotExist:
+            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
+        except facebookuser.DoesNotExist:
             user = None
 
         # IF USER IN DATABASE
@@ -167,8 +167,8 @@ class FacebookComm:
                 if user.phone_number is not None:
                     print("We have phone number. Checking for consultation")
                     # IF THEY HAVE AN APPOINTMENT BOOKED
-                    consultation = Lead.objects.filter(facebook_id=facebook_data.facebook_id,
-                                                       client_id=facebook_data.page_id)
+                    consultation = lead.objects.filter( facebook_id=facebook_data.facebook_id,
+                                                        client_id=facebook_data.page_id )
                     if len(consultation) == 1:
                         print("We have a scheduled consultation")
                         # IF THE CONSULTATION IS IN THE PAST
@@ -216,7 +216,7 @@ class FacebookComm:
         else:
             # SEND GREETING
             print("Saving new user and sending greeting")
-            user = FacebookUser(facebook_id=facebook_data.facebook_id)
+            user = facebookuser( facebook_id=facebook_data.facebook_id )
 
             facebook_data.first_name = self.get_user_first_name(facebook_data.facebook_id)
             if facebook_data.first_name is not None:
@@ -228,8 +228,8 @@ class FacebookComm:
     def send_greeting(self, facebook_data):
 
         try:
-            practice_name = Client.objects.get(facebook_page_id=facebook_data.page_id).practice_name
-        except Client.DoesNotExist:
+            practice_name = client.objects.get( facebook_page_id=facebook_data.page_id ).practice_name
+        except client.DoesNotExist:
             practice_name = "<PRACTICE NAME>"
 
         if facebook_data.first_name is not None:
@@ -266,7 +266,7 @@ class FacebookComm:
         elif facebook_data.payload == "YES TEXTING":
             print("User is ok with texting")
 
-            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
+            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
             user.ok_to_text = True
             user.save()
             message = "Perfect! Now that I have your info, let's figure out " \
@@ -275,7 +275,7 @@ class FacebookComm:
                       "works best for you?"
 
         elif facebook_data.payload == "NO TEXTING":
-            user = FacebookUser.objects.get(facebook_id=facebook_data.facebook_id)
+            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
             user.ok_to_text = False
             user.save()
             message = "Sounds good, we'll give you a call instead! Now that I have " \
