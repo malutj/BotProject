@@ -167,9 +167,9 @@ class FacebookComm:
                 if user.phone_number is not None:
                     print("We have phone number. Checking for consultation")
                     # IF THEY HAVE AN APPOINTMENT BOOKED
-                    consultation = lead.objects.filter(facebook_id=facebook_data.facebook_id,
-                                                       client_id=facebook_data.page_id)
-
+                    # consultation = lead.objects.filter(facebook_id=facebook_data.facebook_id,
+                    #                                    client_id=facebook_data.page_id)
+                    consultation = []
                     if len(consultation) == 1:
                         print("We have a scheduled consultation")
                         # IF THE CONSULTATION IS IN THE PAST
