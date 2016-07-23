@@ -166,10 +166,17 @@ class FacebookComm:
 
                 if user.phone_number is not None:
                     print("We have phone number. Checking for consultation")
+
+                    try:
+                        practice = client.object.get (facebook_page_id=facebook_data.page_id)
+                    except client.DoesNotExist:
+                        print("We got a request with a page ID that's not in our database")
+                        return
+
                     # IF THEY HAVE AN APPOINTMENT BOOKED
-                    # consultation = lead.objects.filter(facebook_id=facebook_data.facebook_id,
-                    #                                    client_id=facebook_data.page_id)
-                    consultation = []
+                    consultation = lead.objects.filter(facebook_user=user.id,
+                                                        practice=practice.id)
+
                     if len(consultation) == 1:
                         print("We have a scheduled consultation")
                         # IF THE CONSULTATION IS IN THE PAST
@@ -180,10 +187,8 @@ class FacebookComm:
                         self.send_message(facebook_data.facebook_id, message)
                     else:
                         print("We don't have a scheduled consultation yet")
-                        message="We need to schedule a consultation"
-                        self.send_message(facebook_data.facebook_id, message)
+                        self.schedule_consultation(facebook_data, True)
 
-                        # ASK IF THEY WOULD LIKE TO SCHEDULE A CONSULTATION
                 else:
                     print("We don't have phone number. See if that's what they sent")
                     # SAVE THE PHONE NUMBER AND LET THEM KNOW WE MIGHT TEXT THEM. SEE IF THAT'S OK
@@ -275,8 +280,10 @@ class FacebookComm:
             user.save()
             message = "Perfect! Now that I have your info, let's figure out " \
                       "the day and time that works best for you. The appointment " \
-                      "is free and it lasts about 1 hour. Which of these options " \
-                      "works best for you?"
+                      "is free and it lasts about 1 hour."
+            self.send_message ( facebook_data.facebook_id, message )
+            self.schedule_consultation ( facebook_data, False )
+            message = None
 
         elif facebook_data.payload == "NO TEXTING":
             user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
@@ -284,8 +291,10 @@ class FacebookComm:
             user.save()
             message = "Sounds good, we'll give you a call instead! Now that I have " \
                       "your info, let's figure out the day and time that works best " \
-                      "for you. The appointment is free and it lasts about 1 hour. " \
-                      "Which of these options works best for you?"
+                      "for you. The appointment is free and it lasts about 1 hour."
+            self.send_message(facebook_data.facebook_id, message)
+            self.schedule_consultation(facebook_data, False)
+            message = None
 
         elif facebook_data.payload == "later":
             print("Received 'later' postback")
@@ -296,6 +305,29 @@ class FacebookComm:
 
         if message is not None:
             self.send_message(facebook_data.facebook_id, message)
+
+
+    def schedule_consultation(self, facebook_data, continued_convo):
+        if continued_convo == True:
+            message = "Shall we continue scheduling your consultation? " \
+                      "Again, the appointment is free and lasts about 1 hour. " \
+                      "Which of these options works best for you?"
+        else:
+            message = "Which of these options works best for you?"
+
+            appt_option_payload = self.get_appt_options(facebook_data.page_id)
+
+            if appt_option_payload is not None:
+                self.send_buttons(facebook_data.facebook_id,message,appt_option_payload)
+            else:
+                message = "Sorry, it doesn't look as though ", \
+                          client.object.get(facebook_page_id = facebook_data.page_id).practice_name, \
+                          " has any consultation times available. I will talk with them and have them " \
+                          "reach out to you personally to schedule something. Thanks!"
+
+                self.send_message(facebook_data.facebook_id, message)
+
+
 
     @staticmethod
     def phone_number_is_valid(text):
