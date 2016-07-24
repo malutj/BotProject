@@ -168,7 +168,7 @@ class FacebookComm:
                     print("We have phone number. Checking for consultation")
 
                     try:
-                        practice = client.object.get(facebook_page_id=facebook_data.page_id)
+                        practice = client.objects.get(facebook_page_id=facebook_data.page_id)
                     except client.DoesNotExist:
                         print("We got a request with a page ID that's not in our database")
                         return
