@@ -139,15 +139,11 @@ class FacebookComm:
             return None
 
     @staticmethod
-    def format_phone_number( phone_number ):
+    def format_phone_number(phone_number):
         formatted_number = ''
-        current_number = 1
         for char in phone_number:
             if char.isDigit():
                 formatted_number += char
-                current_number += 1
-            if current_number == 4 or current_number == 7:
-                formatted_number += '.'
 
         return formatted_number
 
@@ -206,7 +202,7 @@ class FacebookComm:
                     print("We don't have phone number. See if that's what they sent")
                     # SAVE THE PHONE NUMBER AND LET THEM KNOW WE MIGHT TEXT THEM. SEE IF THAT'S OK
                     if self.phone_number_is_valid(facebook_data.text):
-                        user.phone_number = self.format_phone_number( facebook_data.text )
+                        user.phone_number = self.format_phone_number(facebook_data.text)
                         user.save()
 
                         message = "Great! As a side note, we sometimes send text messages for " \
