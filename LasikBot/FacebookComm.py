@@ -4,7 +4,7 @@ from enum import Enum
 from . import ApplicationKey
 from django.http import HttpResponse
 from pprint import pprint
-from .models import client, facebookuser, lead
+from .models import client, facebookuser, lead, availability
 from django.core.validators import validate_email, RegexValidator
 from django.core.exceptions import ValidationError
 
@@ -144,7 +144,7 @@ class FacebookComm:
     def process_message(self, facebook_data):
 
         try:
-            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
+            user = facebookuser.objects.get(facebook_id=facebook_data.facebook_id)
         except facebookuser.DoesNotExist:
             user = None
 
@@ -168,14 +168,14 @@ class FacebookComm:
                     print("We have phone number. Checking for consultation")
 
                     try:
-                        practice = client.object.get (facebook_page_id=facebook_data.page_id)
+                        practice = client.object.get(facebook_page_id=facebook_data.page_id)
                     except client.DoesNotExist:
                         print("We got a request with a page ID that's not in our database")
                         return
 
                     # IF THEY HAVE AN APPOINTMENT BOOKED
                     consultation = lead.objects.filter(facebook_user=user.id,
-                                                        practice=practice.id)
+                                                       practice=practice.id)
 
                     if len(consultation) == 1:
                         print("We have a scheduled consultation")
@@ -225,7 +225,7 @@ class FacebookComm:
         else:
             # SEND GREETING
             print("Saving new user and sending greeting")
-            user = facebookuser( facebook_id=facebook_data.facebook_id )
+            user = facebookuser(facebook_id=facebook_data.facebook_id)
 
             facebook_data.first_name = self.get_user_first_name(facebook_data.facebook_id)
             if facebook_data.first_name is not None:
@@ -237,7 +237,7 @@ class FacebookComm:
     def send_greeting(self, facebook_data):
 
         try:
-            practice_name = client.objects.get( facebook_page_id=facebook_data.page_id ).practice_name
+            practice_name = client.objects.get(facebook_page_id=facebook_data.page_id).practice_name
         except client.DoesNotExist:
             practice_name = "<PRACTICE NAME>"
 
@@ -275,18 +275,18 @@ class FacebookComm:
         elif facebook_data.payload == "YES TEXTING":
             print("User is ok with texting")
 
-            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
+            user = facebookuser.objects.get(facebook_id=facebook_data.facebook_id)
             user.ok_to_text = True
             user.save()
             message = "Perfect! Now that I have your info, let's figure out " \
                       "the day and time that works best for you. The appointment " \
                       "is free and it lasts about 1 hour."
-            self.send_message ( facebook_data.facebook_id, message )
-            self.schedule_consultation ( facebook_data, False )
+            self.send_message(facebook_data.facebook_id, message)
+            self.schedule_consultation(facebook_data, False)
             message = None
 
         elif facebook_data.payload == "NO TEXTING":
-            user = facebookuser.objects.get( facebook_id=facebook_data.facebook_id )
+            user = facebookuser.objects.get(facebook_id=facebook_data.facebook_id)
             user.ok_to_text = False
             user.save()
             message = "Sounds good, we'll give you a call instead! Now that I have " \
@@ -308,25 +308,27 @@ class FacebookComm:
 
 
     def schedule_consultation(self, facebook_data, continued_convo):
-        if continued_convo == True:
+        if continued_convo is True:
             message = "Shall we continue scheduling your consultation? " \
                       "Again, the appointment is free and lasts about 1 hour. " \
                       "Which of these options works best for you?"
         else:
             message = "Which of these options works best for you?"
 
-            appt_option_payload = self.get_appt_options(facebook_data.page_id)
+        appt_option_payload = self.get_appt_options(facebook_data.page_id)
 
-            if appt_option_payload is not None:
-                self.send_buttons(facebook_data.facebook_id,message,appt_option_payload)
-            else:
-                message = "Sorry, it doesn't look as though ", \
-                          client.object.get(facebook_page_id = facebook_data.page_id).practice_name, \
-                          " has any consultation times available. I will talk with them and have them " \
-                          "reach out to you personally to schedule something. Thanks!"
+        if appt_option_payload is not None:
+            self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
+        else:
+            message = "Sorry, it doesn't look as though ",\
+                      client.object.get(facebook_page_id = facebook_data.page_id).practice_name, \
+                      " has any consultation times available. I will talk with them and have them " \
+                      "reach out to you personally to schedule something. Thanks!"
 
-                self.send_message(facebook_data.facebook_id, message)
+            self.send_message(facebook_data.facebook_id, message)
+            return
 
+        self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
 
 
     @staticmethod
@@ -346,3 +348,25 @@ class FacebookComm:
             return True
         except ValidationError:
             return False
+
+    @staticmethod
+    def get_appt_options(page_id):
+        client_availability = availability.objects.get(practice=page_id).order_by('pk')
+        button_payload = []
+        current_count = 0
+        if len(client_availability) > 0:
+            for option in client_availability:
+                button_payload.append({"type": "postback",
+                                       "title": (option.day_of_the_week, " between ",
+                                                 option.start_time, " and ", option.end_time),
+                                       "payload": current_count})
+                current_count += 1
+
+            button_payload.append({"type": "postback",
+                                   "title": "None of these work for me",
+                                   "payload": current_count})
+
+        else:
+            button_payload = None
+
+        return button_payload
