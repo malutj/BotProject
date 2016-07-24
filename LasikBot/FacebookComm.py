@@ -316,7 +316,7 @@ class FacebookComm:
         else:
             message = "Which of these options works best for you?"
 
-        appt_option_payload = self.get_appt_options(facebook_data.page_id)
+        appt_option_payload = FacebookComm.get_appt_options(facebook_data.page_id)
 
         if appt_option_payload is not None:
             self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
