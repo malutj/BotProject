@@ -323,6 +323,7 @@ class FacebookComm:
         button_payload = []
         current_count = 0
         if len(client_availability) > 0:
+            print("iterating through client availability options")
             for option in client_availability:
                 schedule_text = option.day_of_the_week, " between ", option.start_time, " and ", option.end_time
                 print(schedule_text)
@@ -336,6 +337,7 @@ class FacebookComm:
                                    "payload": current_count})
 
         else:
+            print("no availability entries for this client")
             button_payload = None
 
         return button_payload
