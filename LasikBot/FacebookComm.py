@@ -308,6 +308,7 @@ class FacebookComm:
 
 
     def schedule_consultation(self, facebook_data, continued_convo):
+        print("scheduling consultation")
         if continued_convo is True:
             message = "Shall we continue scheduling your consultation? " \
                       "Again, the appointment is free and lasts about 1 hour. " \
@@ -320,6 +321,7 @@ class FacebookComm:
         if appt_option_payload is not None:
             self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
         else:
+            print("No appointment options.")
             message = "Sorry, it doesn't look as though ",\
                       client.object.get(facebook_page_id = facebook_data.page_id).practice_name, \
                       " has any consultation times available. I will talk with them and have them " \
@@ -351,14 +353,16 @@ class FacebookComm:
 
     @staticmethod
     def get_appt_options(page_id):
+        print("fetching appointment options")
         client_availability = availability.objects.get(practice=page_id).order_by('pk')
         button_payload = []
         current_count = 0
         if len(client_availability) > 0:
             for option in client_availability:
+                schedule_text = option.day_of_the_week, " between ", option.start_time, " and ", option.end_time
+                print(schedule_text)
                 button_payload.append({"type": "postback",
-                                       "title": (option.day_of_the_week, " between ",
-                                                 option.start_time, " and ", option.end_time),
+                                       "title": schedule_text,
                                        "payload": current_count})
                 current_count += 1
 
