@@ -307,6 +307,30 @@ class FacebookComm:
             self.send_message(facebook_data.facebook_id, message)
 
 
+    @staticmethod
+    def get_appt_options ( page_id ):
+        print ( "fetching appointment options" )
+        client_availability = availability.objects.get ( practice = page_id ).order_by ( 'pk' )
+        button_payload = [ ]
+        current_count = 0
+        if len ( client_availability ) > 0:
+            for option in client_availability:
+                schedule_text = option.day_of_the_week, " between ", option.start_time, " and ", option.end_time
+                print ( schedule_text )
+                button_payload.append ( { "type": "postback",
+                                          "title": schedule_text,
+                                          "payload": current_count } )
+                current_count += 1
+
+            button_payload.append ( { "type": "postback",
+                                      "title": "None of these work for me",
+                                      "payload": current_count } )
+
+        else:
+            button_payload = None
+
+        return button_payload
+
     def schedule_consultation(self, facebook_data, continued_convo):
         print("scheduling consultation")
         if continued_convo is True:
@@ -350,27 +374,3 @@ class FacebookComm:
             return True
         except ValidationError:
             return False
-
-    @staticmethod
-    def get_appt_options(page_id):
-        print("fetching appointment options")
-        client_availability = availability.objects.get(practice=page_id).order_by('pk')
-        button_payload = []
-        current_count = 0
-        if len(client_availability) > 0:
-            for option in client_availability:
-                schedule_text = option.day_of_the_week, " between ", option.start_time, " and ", option.end_time
-                print(schedule_text)
-                button_payload.append({"type": "postback",
-                                       "title": schedule_text,
-                                       "payload": current_count})
-                current_count += 1
-
-            button_payload.append({"type": "postback",
-                                   "title": "None of these work for me",
-                                   "payload": current_count})
-
-        else:
-            button_payload = None
-
-        return button_payload
