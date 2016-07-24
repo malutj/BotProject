@@ -347,7 +347,7 @@ class FacebookComm:
         else:
             print("No appointment options.")
             message = "Sorry, it doesn't look as though ",\
-                      client.object.get(facebook_page_id = facebook_data.page_id).practice_name, \
+                      client.objects.get(facebook_page_id = facebook_data.page_id).practice_name, \
                       " has any consultation times available. I will talk with them and have them " \
                       "reach out to you personally to schedule something. Thanks!"
 
