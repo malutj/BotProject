@@ -319,7 +319,7 @@ class FacebookComm:
     @staticmethod
     def get_appt_options(page_id):
         print("fetching appointment options")
-        client_availability = availability.objects.filter(practice = page_id).order_by('pk')
+        client_availability = availability.objects.filter(practice = page_id)
         button_payload = []
         current_count = 0
         if len(client_availability) > 0:
