@@ -142,7 +142,7 @@ class FacebookComm:
     def format_phone_number(phone_number):
         formatted_number = ''
         for char in phone_number:
-            if char.isDigit():
+            if char.isdigit():
                 formatted_number += str(char)
 
         return formatted_number
