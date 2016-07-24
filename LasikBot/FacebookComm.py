@@ -60,6 +60,8 @@ class FacebookComm:
         response_msg = json.dumps({"recipient": {"id": facebook_id}, "message": {"text": message}})
 
         # todo: error handling
+        print("Sending message:")
+        print(message)
         requests.post(post_url, headers={"Content-Type": "application/json"}, data=response_msg)
 
     # ------------------------------------------------------------------------- #
@@ -357,14 +359,7 @@ class FacebookComm:
             self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
         else:
             print("No appointment options.")
-            # message = "Sorry, it doesn't look as though ",\
-            #           client.objects.get(facebook_page_id = facebook_data.page_id).practice_name, \
-            #           " has any consultation times available. I will talk with them and have them " \
-            #           "reach out to you personally to schedule something. Thanks!"
-
-            message = "Sorry, it doesn't look as though <PRACTICE NAME>", \
-                      " has any consultation times available. I will talk with them and have them " \
-                      "reach out to you personally to schedule something. Thanks!"
+            message = "Sorry, it doesn't look as though " + client.objects.get(facebook_page_id = facebook_data.page_id).practice_name + " has any consultation times available. I will talk with them and have them reach out to you personally to schedule something. Thanks!"
 
             self.send_message(facebook_data.facebook_id, message)
 
