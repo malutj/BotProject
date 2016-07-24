@@ -143,7 +143,7 @@ class FacebookComm:
         formatted_number = ''
         for char in phone_number:
             if char.isDigit():
-                formatted_number += char
+                formatted_number += str(char)
 
         return formatted_number
 

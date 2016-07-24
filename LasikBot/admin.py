@@ -6,4 +6,3 @@ admin.site.register(models.client)
 admin.site.register(models.lead)
 admin.site.register(models.facebookuser)
 admin.site.register(models.availability)
-

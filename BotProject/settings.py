@@ -13,17 +13,17 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 
 
-#Determine our operating environment
+# Determine our operating environment
 try:
     server = os.environ['SERVER']
 except KeyError:
     # todo error
     server = None
-    print ( "Unable to find 'SERVER' environment variable" )
+    print("Unable to find 'SERVER' environment variable")
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname ( os.path.dirname ( os.path.abspath ( __file__ ) ) )
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -37,7 +37,7 @@ DEBUG = True
 # else:
 #     DEBUG = True
 
-ALLOWED_HOSTS = [ ]
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'BotProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'BotProject.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 if server == "HEROKU":
-    print ( "Using PRODUCTION database" )
+    print("Using PRODUCTION database")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -99,11 +99,11 @@ if server == "HEROKU":
     }
 
 else:
-    print ( "Using DEVELOPMENT database" )
+    print("Using DEVELOPMENT database")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join ( BASE_DIR, 'db.sqlite3' ),
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
 
