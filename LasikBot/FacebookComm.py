@@ -275,6 +275,7 @@ class FacebookComm:
                            "payload": {"template_type": "button", "text": message, "buttons": payload}
                            }}})
 
+        print("Button Message: ", callback_message)
         requests.post(post_message_url, headers={"Content-Type": "application/json"}, data=callback_message)
         # todo error handling
 
@@ -321,22 +322,24 @@ class FacebookComm:
     @staticmethod
     def get_appt_options(page_id):
         print("fetching appointment options")
-        client_availability = availability.objects.filter(practice = page_id)
+        client_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk)
         button_payload = []
         current_count = 0
+
         if len(client_availability) > 0:
             print("iterating through client availability options")
             for option in client_availability:
-                schedule_text = option.day_of_the_week, " between ", option.start_time, " and ", option.end_time
-                print(schedule_text)
+                schedule_text = str(option.day_of_the_week) + " between " + \
+                                str(option.start_time) + " and " + str(option.end_time)
+
                 button_payload.append({"type": "postback",
                                        "title": schedule_text,
-                                       "payload": current_count})
+                                       "payload": str(current_count)})
                 current_count += 1
 
             button_payload.append({"type": "postback",
                                    "title": "None of these work for me",
-                                   "payload": current_count})
+                                   "payload": str(current_count)})
 
         else:
             print("no availability entries for this client")
@@ -356,6 +359,7 @@ class FacebookComm:
         appt_option_payload = FacebookComm.get_appt_options(facebook_data.page_id)
 
         if appt_option_payload is not None:
+            print("Payload:", appt_option_payload)
             self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
         else:
             print("No appointment options.")
