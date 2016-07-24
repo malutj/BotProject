@@ -13,13 +13,13 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 
 
-# Determine our operating environment
-# try:
-#     server = os.environ[ 'SERVER' ]
-# except KeyError:
-#     # todo error
-#     server = None
-#     print ( "Unable to find 'SERVER' environment variable" )
+#Determine our operating environment
+try:
+    server = os.environ['SERVER']
+except KeyError:
+    # todo error
+    server = None
+    print ( "Unable to find 'SERVER' environment variable" )
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -85,27 +85,27 @@ WSGI_APPLICATION = 'BotProject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-# if server == "HEROKU":
-print ( "Using PRODUCTION database" )
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'de4v113fnmgjui',
-        'USER': 'gaowijcwggvndi',
-        'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
-        'HOST': 'ec2-54-235-208-3.compute-1.amazonaws.com',
-        'PORT': '5432',
+if server == "HEROKU":
+    print ( "Using PRODUCTION database" )
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'de4v113fnmgjui',
+            'USER': 'gaowijcwggvndi',
+            'PASSWORD': 'nCBjzwAum10Q0yUsQmGW9rtWAs',
+            'HOST': 'ec2-54-235-208-3.compute-1.amazonaws.com',
+            'PORT': '5432',
+        }
     }
-}
-#
-# else:
-#     print ( "Using DEVELOPMENT database" )
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join ( BASE_DIR, 'db.sqlite3' ),
-#         }
-#     }
+
+else:
+    print ( "Using DEVELOPMENT database" )
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join ( BASE_DIR, 'db.sqlite3' ),
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
