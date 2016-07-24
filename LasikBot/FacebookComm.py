@@ -367,9 +367,6 @@ class FacebookComm:
                       "reach out to you personally to schedule something. Thanks!"
 
             self.send_message(facebook_data.facebook_id, message)
-            return
-
-        self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
 
 
     @staticmethod
