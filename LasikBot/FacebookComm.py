@@ -312,6 +312,11 @@ class FacebookComm:
             print("Received 'later' postback")
             message = "Sounds good! Just stop back by when you want to schedule your free consultation"
 
+        elif facebook_data.payload == "START":
+            print("Someone pushed the 'Get Started' button")
+            self.process_message(facebook_data)
+            message = None
+
         else:
             message = None
 
