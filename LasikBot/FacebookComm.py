@@ -267,17 +267,27 @@ class FacebookComm:
         self.send_buttons(facebook_data.facebook_id, welcome_message, button_payload)
 
     @staticmethod
-    def send_buttons(facebook_id, message, payload):
+    def send_buttons(facebook_id, message, button_payload):
         print("Sending callback buttons")
         post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
         callback_message = json.dumps({"recipient": {"id": facebook_id}, "message": {
             "attachment": {"type": "template",
-                           "payload": {"template_type": "button", "text": message, "buttons": payload}
+                           "payload": {"template_type": "button", "text": message, "buttons": button_payload}
                            }}})
 
         print("Button Message: ", callback_message)
         requests.post(post_message_url, headers={"Content-Type": "application/json"}, data=callback_message)
+
         # todo error handling
+
+    @staticmethod
+    def send_template(facebook_id, message, template_payload):
+        print("Sending template")
+        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
+        template_message = json.dumps({"recipient": {"id": facebook_id}, "message": {
+            "attachment": {"type": "template",
+                           "payload": {"template_type": "generic", "elements": template_payload}
+                           }}})
 
     def process_postback(self, facebook_data):
         if facebook_data.payload == "OK":
@@ -393,3 +403,42 @@ class FacebookComm:
             return True
         except ValidationError:
             return False
+
+        "message":{
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "generic",
+                    "elements": [
+                        {
+                            "title": "Welcome to Peter\'s Hats",
+                            "image_url": "http://petersapparel.parseapp.com/img/item100-thumb.png",
+                            "subtitle": "We\'ve got the right hat for everyone.",
+                            "buttons": [
+                                {
+                                    "type": "web_url",
+                                    "url": "https://petersapparel.parseapp.com/view_item?item_id=100",
+                                    "title": "View Website"
+                                },
+                                {
+                                    "type": "postback",
+                                    "title": "Start Chatting",
+                                    "payload": "USER_DEFINED_PAYLOAD"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+        }' "https://graph.facebook.com/v2.6/me/messages?access_token=PAGE_ACCESS_TOKEN"
+
+        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
+        callback_message = json.dumps ( { "recipient": { "id": facebook_id }, "message": {
+            "attachment": { "type": "template",
+                            "payload": { "template_type": "button", "text": message, "buttons": payload }
+                            } } } )
+
+        print ( "Button Message: ", callback_message )
+        requests.post ( post_message_url, headers = { "Content-Type": "application/json" }, data = callback_message )
+        # todo error handling
