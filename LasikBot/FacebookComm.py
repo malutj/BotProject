@@ -281,7 +281,7 @@ class FacebookComm:
         # todo error handling
 
     @staticmethod
-    def send_template(facebook_id, message, template_payload):
+    def send_template(facebook_id, template_payload):
         print("Sending template")
         post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
         template_message = json.dumps({"recipient": {"id": facebook_id}, "message": {
@@ -335,32 +335,115 @@ class FacebookComm:
 
 
     @staticmethod
-    def get_appt_options(page_id):
+    def get_appointment_options(page_id):
         print("fetching appointment options")
-        client_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk)
-        button_payload = []
-        current_count = 0
+        monday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Monday")
+        tuesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Tuesday")
+        wednesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Wednesday")
+        thursday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Thursday")
+        friday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Friday")
+        saturday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Saturday")
+        sunday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Sunday")
 
-        if len(client_availability) > 0:
-            print("iterating through client availability options")
-            for option in client_availability:
-                schedule_text = str(option.day_of_the_week) + " between " + \
-                                str(option.start_time) + " and " + str(option.end_time)
+        elements = []
 
-                button_payload.append({"type": "postback",
-                                       "title": schedule_text,
-                                       "payload": str(current_count)})
+        # MONDAY
+        if len(monday_availability) > 0:
+            monday_buttons = []
+            current_count = 0
+            for option in monday_availability:
+                monday_buttons.append({"type": "postback",
+                                       "title": str(option.start_time) + "-" + str(option.end_time),
+                                       "payload": {"MONDAY":str(current_count)}})
                 current_count += 1
 
-            button_payload.append({"type": "postback",
-                                   "title": "None of these work for me",
-                                   "payload": str(current_count)})
+            elements.append({"title": "Monday Availability",
+                             "buttons": str(monday_buttons)})
+
+        # TUESDAY
+        if len(tuesday_availability) > 0:
+            tuesday_buttons = []
+            current_count = 0
+            for option in tuesday_availability:
+                tuesday_buttons.append({"type": "postback",
+                                        "title": str(option.start_time) + "-" + str(option.end_time),
+                                        "payload": {"TUESDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Tuesday Availability",
+                             "buttons": str(tuesday_buttons)})
+
+        # WEDNESDAY
+        if len(wednesday_availability) > 0:
+            wednesday_buttons = []
+            current_count = 0
+            for option in wednesday_availability:
+                wednesday_buttons.append({"type": "postback",
+                                        "title": str(option.start_time) + "-" + str(option.end_time),
+                                        "payload": {"WEDNESDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Wednesday Availability",
+                             "buttons": str(wednesday_buttons)})
+
+        # THURSDAY
+        if len(thursday_availability) > 0:
+            thursday_buttons = []
+            current_count = 0
+            for option in thursday_availability:
+                thursday_buttons.append({"type": "postback",
+                                          "title": str(option.start_time) + "-" + str(option.end_time),
+                                          "payload": {"THURSDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Thursday Availability",
+                             "buttons": str(thursday_buttons)})
+
+        # FRIDAY
+        if len(friday_availability) > 0:
+            friday_buttons = []
+            current_count = 0
+            for option in friday_availability:
+                friday_buttons.append({"type": "postback",
+                                         "title": str(option.start_time) + "-" + str(option.end_time),
+                                         "payload": {"FRIDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Friday Availability",
+                             "buttons": str(friday_buttons)})
+
+        # SATURDAY
+        if len(saturday_availability) > 0:
+            saturday_buttons = []
+            current_count = 0
+            for option in saturday_availability:
+                saturday_buttons.append({"type": "postback",
+                                       "title": str(option.start_time) + "-" + str(option.end_time),
+                                       "payload": {"SATURDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Saturday Availability",
+                             "buttons": str(saturday_buttons)})
+
+        # SUNDAY
+        if len(sunday_availability) > 0:
+            sunday_buttons = []
+            current_count = 0
+            for option in sunday_availability:
+                sunday_buttons.append({"type": "postback",
+                                         "title": str(option.start_time) + "-" + str(option.end_time),
+                                         "payload": {"SUNDAY": str(current_count)}})
+                current_count += 1
+
+            elements.append({"title": "Sunday Availability",
+                             "buttons": str(sunday_buttons)})
 
         else:
             print("no availability entries for this client")
-            button_payload = None
+            elements = None
 
-        return button_payload
+        return elements
+
 
     def schedule_consultation(self, facebook_data, continued_convo):
         print("scheduling consultation")
@@ -371,11 +454,12 @@ class FacebookComm:
         else:
             message = "Which of these options works best for you?"
 
-        appt_option_payload = FacebookComm.get_appt_options(facebook_data.page_id)
+        option_payload = FacebookComm.get_appointment_options(facebook_data.page_id)
 
-        if appt_option_payload is not None:
-            print("Payload:", appt_option_payload)
-            self.send_buttons(facebook_data.facebook_id, message, appt_option_payload)
+        if option_payload is not None:
+            print("Payload:", option_payload)
+            self.send_message(facebook_data.facebook_id, "Which of these options work best for you?")
+            self.send_template(facebook_data.facebook_id, option_payload)
         else:
             print("No appointment options.")
             message = "Sorry, it doesn't look as though " + \
@@ -403,42 +487,3 @@ class FacebookComm:
             return True
         except ValidationError:
             return False
-
-        "message":{
-            "attachment": {
-                "type": "template",
-                "payload": {
-                    "template_type": "generic",
-                    "elements": [
-                        {
-                            "title": "Welcome to Peter\'s Hats",
-                            "image_url": "http://petersapparel.parseapp.com/img/item100-thumb.png",
-                            "subtitle": "We\'ve got the right hat for everyone.",
-                            "buttons": [
-                                {
-                                    "type": "web_url",
-                                    "url": "https://petersapparel.parseapp.com/view_item?item_id=100",
-                                    "title": "View Website"
-                                },
-                                {
-                                    "type": "postback",
-                                    "title": "Start Chatting",
-                                    "payload": "USER_DEFINED_PAYLOAD"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-        }
-        }' "https://graph.facebook.com/v2.6/me/messages?access_token=PAGE_ACCESS_TOKEN"
-
-        post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
-        callback_message = json.dumps ( { "recipient": { "id": facebook_id }, "message": {
-            "attachment": { "type": "template",
-                            "payload": { "template_type": "button", "text": message, "buttons": payload }
-                            } } } )
-
-        print ( "Button Message: ", callback_message )
-        requests.post ( post_message_url, headers = { "Content-Type": "application/json" }, data = callback_message )
-        # todo error handling
