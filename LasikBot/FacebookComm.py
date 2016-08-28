@@ -284,10 +284,23 @@ class FacebookComm:
     def send_template(facebook_id, template_payload):
         print("Sending template")
         post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=' + ApplicationKey.application_key
-        template_message = json.dumps({"recipient": {"id": facebook_id}, "message": {
-            "attachment": {"type": "template",
-                           "payload": {"template_type": "generic", "elements": template_payload}
+
+        print('TEMPLATE PAYLOAD\n--------------------------\n',template_payload, '\n')
+        
+        template_message = json.dumps({'recipient': {
+                                         'id': facebook_id
+                                      },
+                                       'message': {
+                                         'attachment': {
+                                           'type': 'template',
+                                           'payload': {
+                                             'template_type': 'generic',
+                                             'elements': template_payload}
                            }}})
+
+        print('TEMPLATE MESSAGE\n--------------------------\n', template_message, '\n')
+        requests.post(post_message_url, headers={"Content-Type": "application/json"}, data=template_message)
+
 
     def process_postback(self, facebook_data):
         if facebook_data.payload == "OK":
@@ -337,13 +350,13 @@ class FacebookComm:
     @staticmethod
     def get_appointment_options(page_id):
         print("fetching appointment options")
-        monday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Monday")
-        tuesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Tuesday")
-        wednesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Wednesday")
-        thursday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Thursday")
-        friday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Friday")
-        saturday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Saturday")
-        sunday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week="Sunday")
+        monday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Monday')
+        tuesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Tuesday')
+        wednesday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Wednesday')
+        thursday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Thursday')
+        friday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Friday')
+        saturday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Saturday')
+        sunday_availability = availability.objects.filter(practice=client.objects.get(facebook_page_id=page_id).pk, day_of_the_week='Sunday')
 
         elements = []
 
@@ -351,27 +364,30 @@ class FacebookComm:
         if len(monday_availability) > 0:
             monday_buttons = []
             current_count = 0
+            print('-------------MONDAY-------------\n')
             for option in monday_availability:
-                monday_buttons.append({"type": "postback",
-                                       "title": str(option.start_time) + "-" + str(option.end_time),
-                                       "payload": {"MONDAY":str(current_count)}})
+                monday_buttons.append({'type': 'postback',
+                                       'title': str(option.start_time) + '-' + str(option.end_time),
+                                       'payload': '{"MONDAY":"'+str(current_count)+'"}'})
+                print(monday_buttons)
                 current_count += 1
 
-            elements.append({"title": "Monday Availability",
-                             "buttons": str(monday_buttons)})
+            elements.append({'title': 'Monday Availability',
+                             'buttons': monday_buttons})
 
+        print(elements)
         # TUESDAY
         if len(tuesday_availability) > 0:
             tuesday_buttons = []
             current_count = 0
             for option in tuesday_availability:
-                tuesday_buttons.append({"type": "postback",
+                tuesday_buttons.append({'type': 'postback',
                                         "title": str(option.start_time) + "-" + str(option.end_time),
-                                        "payload": {"TUESDAY": str(current_count)}})
+                                        'payload': '{"TUESDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Tuesday Availability",
-                             "buttons": str(tuesday_buttons)})
+                             "buttons": tuesday_buttons})
 
         # WEDNESDAY
         if len(wednesday_availability) > 0:
@@ -380,11 +396,11 @@ class FacebookComm:
             for option in wednesday_availability:
                 wednesday_buttons.append({"type": "postback",
                                         "title": str(option.start_time) + "-" + str(option.end_time),
-                                        "payload": {"WEDNESDAY": str(current_count)}})
+                                        'payload': '{"WEDNESDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Wednesday Availability",
-                             "buttons": str(wednesday_buttons)})
+                             "buttons": wednesday_buttons})
 
         # THURSDAY
         if len(thursday_availability) > 0:
@@ -393,11 +409,11 @@ class FacebookComm:
             for option in thursday_availability:
                 thursday_buttons.append({"type": "postback",
                                           "title": str(option.start_time) + "-" + str(option.end_time),
-                                          "payload": {"THURSDAY": str(current_count)}})
+                                          'payload': '{"THURSDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Thursday Availability",
-                             "buttons": str(thursday_buttons)})
+                             "buttons": thursday_buttons})
 
         # FRIDAY
         if len(friday_availability) > 0:
@@ -406,11 +422,11 @@ class FacebookComm:
             for option in friday_availability:
                 friday_buttons.append({"type": "postback",
                                          "title": str(option.start_time) + "-" + str(option.end_time),
-                                         "payload": {"FRIDAY": str(current_count)}})
+                                         'payload': '{"FRIDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Friday Availability",
-                             "buttons": str(friday_buttons)})
+                             "buttons": friday_buttons})
 
         # SATURDAY
         if len(saturday_availability) > 0:
@@ -419,11 +435,11 @@ class FacebookComm:
             for option in saturday_availability:
                 saturday_buttons.append({"type": "postback",
                                        "title": str(option.start_time) + "-" + str(option.end_time),
-                                       "payload": {"SATURDAY": str(current_count)}})
+                                       'payload': '{"SATURDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Saturday Availability",
-                             "buttons": str(saturday_buttons)})
+                             "buttons": saturday_buttons})
 
         # SUNDAY
         if len(sunday_availability) > 0:
@@ -432,13 +448,13 @@ class FacebookComm:
             for option in sunday_availability:
                 sunday_buttons.append({"type": "postback",
                                          "title": str(option.start_time) + "-" + str(option.end_time),
-                                         "payload": {"SUNDAY": str(current_count)}})
+                                         'payload': '{"SUNDAY":"'+str(current_count)+'"}'})
                 current_count += 1
 
             elements.append({"title": "Sunday Availability",
-                             "buttons": str(sunday_buttons)})
+                             "buttons": sunday_buttons})
 
-        else:
+        if len(elements) == 0:
             print("no availability entries for this client")
             elements = None
 
